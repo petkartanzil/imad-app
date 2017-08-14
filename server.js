@@ -5,24 +5,48 @@ var path = require('path');
 var app = express();
 app.use(morgan('combined'));
 
-var articleOne={
-    title: 'Article One | Tanzil Petkar',
-    heading:'Article One',
-    date: 'August 14, 2017',
+var articles={
+    'article-one':{
+        title: 'Article One | Tanzil Petkar',
+        heading:'Article One',
+        date: 'August 1, 2017',
+        content:`
+        <p>
+            This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Artic
+        <p>
+            This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.
+        </p>
+        <p>
+            This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.
+        </p>
+        <p>
+            This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.
+        </p>`
+        
+    },
+    'article-two':{
+    title: 'Article Two | Tanzil Petkar',
+    heading:'Article Two',
+    date: 'August 5, 2017',
     content:`
     <p>
-        This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Artic
-    <p>
-        This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.
-    </p>
-    <p>
-        This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.
-    </p>
-    <p>
-        This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.
+        This is Second Article.
     </p>`
     
+},
+    'article-three':{
+    title: 'Article Three | Tanzil Petkar',
+    heading:'Article Three',
+    date: 'August 10, 2017',
+    content:`
+    <p>
+        This is First Article.
+    </p>`
+    
+},
+
 };
+
 
 function createTemplate (data){
         var title=data.title;
@@ -67,22 +91,13 @@ function createTemplate (data){
         return htmlTemplate;
 }
 
-
-
 app.get('/', function (req, res) {
   res.sendFile(path.join(__dirname, 'ui', 'index.html'));
 });
 
-app.get('/article-one', function (req, res) {
-    res.send(createTemplate(articleOne));
-});
-
-app.get('/article-two', function (req, res) {
-     res.sendFile(path.join(__dirname, 'ui', 'article-two.html'));
-});
-
-app.get('/article-three', function (req, res) {
-    res.sendFile(path.join(__dirname, 'ui', 'article-three.html'));
+app.get('/:articleName', function (req, res) {
+    var articleName=req.params.articleName;
+    res.send(createTemplate(articles[articleName]));
 });
 
 app.get('/ui/style.css', function (req, res) {
