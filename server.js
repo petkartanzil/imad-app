@@ -5,130 +5,106 @@ var path = require('path');
 var app = express();
 app.use(morgan('combined'));
 
-var articles={
-    'article-one':{
-        title: 'Article One | Tanzil Petkar',
-        heading:'Article One',
-        date: 'August 1, 2017',
-        content:`
-        <p>
-            This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Artic
-        <p>
-            This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.
-        </p>
-        <p>
-            This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.
-        </p>
-        <p>
-            This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.This is First Article.
-        </p>`
-        
-    },
-    'article-two':{
-    title: 'Article Two | Tanzil Petkar',
-    heading:'Article Two',
-    date: 'August 5, 2017',
-    content:`
-    <p>
-        This is Second Article.
-    </p>`
-    
-},
-    'article-three':{
-    title: 'Article Three | Tanzil Petkar',
-    heading:'Article Three',
-    date: 'August 10, 2017',
-    content:`
-    <p>
-        This is Third Article.
-    </p>`
-    
-},
+// Eg: coco98.imad.hasura-app.io/articles/article-one will result in article-one
+var currentArticleTitle = window.location.pathname.split('/')[2];
 
-};
-
-
-function createTemplate (data){
-        var title=data.title;
-        var heading=data.heading;
-        var date=data.date;
-        var content=data.content;
-        
-        var htmlTemplate=`
-        <html>
-            <head>
-                <title>
-                  ${title}
-                </title>
-                 <link href="/ui/style.css" rel="stylesheet" />
-                
-                <meta name="viemport" content="width=device-width, initial-sacale=1" />
-            </head>
-            
-            <body>
-                <div class="container">
-                    <div>
-                        <a href="/">Home</a>
-                    </div>
-                    <hr/>
-                    
-                    <h3>
-                       ${heading}
-                    </h3>
-                    <div>
-                       ${date}
-                    </div>
-                    
-                    <div>
-                       ${content}
-                    </div>
-                </div>
-            </body>
-            
-            
-        </html>
+function loadCommentForm () {
+    var commentFormHtml = `
+        <h5>Submit a comment</h5>
+        <textarea id="comment_text" rows="5" cols="100" placeholder="Enter your comment here..."></textarea>
+        <br/>
+        <input type="submit" id="submit" value="Submit" />
+        <br/>
         `;
-        return htmlTemplate;
+    document.getElementById('comment_form').innerHTML = commentFormHtml;
+    
+    // Submit username/password to login
+    var submit = document.getElementById('submit');
+    submit.onclick = function () {
+        // Create a request object
+        var request = new XMLHttpRequest();
+        
+        // Capture the response and store it in a variable
+        request.onreadystatechange = function () {
+          if (request.readyState === XMLHttpRequest.DONE) {
+                // Take some action
+                if (request.status === 200) {
+                    // clear the form & reload all the comments
+                    document.getElementById('comment_text').value = '';
+                    loadComments();    
+                } else {
+                    alert('Error! Could not submit comment');
+                }
+                submit.value = 'Submit';
+          }
+        };
+        
+        // Make the request
+        var comment = document.getElementById('comment_text').value;
+        request.open('POST', '/submit-comment/' + currentArticleTitle, true);
+        request.setRequestHeader('Content-Type', 'application/json');
+        request.send(JSON.stringify({comment: comment}));  
+        submit.value = 'Submitting...';
+        
+    };
 }
 
-app.get('/', function (req, res) {
-  res.sendFile(path.join(__dirname, 'ui', 'index.html'));
-});
-
-var counter=0;
-app.get('/counter', function(req, res){
-    counter=counter+1;
-    res.send(counter.toString());
-});
-
-app.get('/:articleName', function (req, res) {
-    var articleName=req.params.articleName;
-    res.send(createTemplate(articles[articleName]));
-});
-
-app.get('/ui/style.css', function (req, res) {
-  res.sendFile(path.join(__dirname, 'ui', 'style.css'));
-});
-
-app.get('/ui/main.js', function (req, res) {
-  res.sendFile(path.join(__dirname, 'ui', 'main.js'));
-});
-
-
-app.get('/ui/madi.png', function (req, res) {
-  res.sendFile(path.join(__dirname, 'ui', 'madi.png'));
-});
-
-var names=[];
-app.get('/submit-name:name', fuction(req, res){
-    var name=req.params.name;
+function loadLogin () {
+    // Check if the user is already logged in
+    var request = new XMLHttpRequest();
+    request.onreadystatechange = function () {
+        if (request.readyState === XMLHttpRequest.DONE) {
+            if (request.status === 200) {
+                loadCommentForm(this.responseText);
+            }
+        }
+    };
     
-    names.push(name);
+    request.open('GET', '/check-login', true);
+    request.send(null);
+}
+
+function escapeHTML (text)
+{
+    var $text = document.createTextNode(text);
+    var $div = document.createElement('div');
+    $div.appendChild($text);
+    return $div.innerHTML;
+}
+
+function loadComments () {
+        // Check if the user is already logged in
+    var request = new XMLHttpRequest();
+    request.onreadystatechange = function () {
+        if (request.readyState === XMLHttpRequest.DONE) {
+            var comments = document.getElementById('comments');
+            if (request.status === 200) {
+                var content = '';
+                var commentsData = JSON.parse(this.responseText);
+                for (var i=0; i< commentsData.length; i++) {
+                    var time = new Date(commentsData[i].timestamp);
+                    content += `<div class="comment">
+                        <p>${escapeHTML(commentsData[i].comment)}</p>
+                        <div class="commenter">
+                            ${commentsData[i].username} - ${time.toLocaleTimeString()} on ${time.toLocaleDateString()} 
+                        </div>
+                    </div>`;
+                }
+                comments.innerHTML = content;
+            } else {
+                comments.innerHTML('Oops! Could not load comments!');
+            }
+        }
+    };
     
-    res.send(JSON.stringify(names));
-});
+    request.open('GET', '/get-comments/' + currentArticleTitle, true);
+    request.send(null);
+}
 
 
+// The first thing to do is to check if the user is logged in!
+loadLogin();
+loadComments();
 
 // Do not change port, otherwise your app won't run on IMAD servers
 // Use 8080 only for local development if you already have apache running on 80
